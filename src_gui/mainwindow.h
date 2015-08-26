@@ -24,6 +24,7 @@ public:
     void updatePropertyTable(int nodeID);
     void displayTypeInfo(const QString &type);
     static int const EXIT_CODE_REBOOT;
+
 public slots:
 
 private slots:
@@ -46,6 +47,8 @@ private slots:
     void on_actionStop_Simulation_triggered();
 
     void on_actionAbout_triggered();
+
+    void on_actionRun_Mesh_triggered(QString line);
 
 private:
     void initializeGUI();

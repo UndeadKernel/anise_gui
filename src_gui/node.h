@@ -101,6 +101,17 @@ public:
     void addErrorMsg(const QString &value);
     bool hasGate(const QString &gateName);
 
+    QStringList getLogMessage() const;
+    void setLogMessage(const QStringList &value);
+    void addLogMessage(const QString &value);
+    QStringList getLogWarning() const;
+    void setLogWarning(const QStringList &value);
+    void addLogWarning(const QString &value);
+    QStringList getLogError() const;
+    void setLogError(const QStringList &value);
+    void addLogError(const QString &value);
+
+
 private:
     bool addParam(const QString &descr, const QString &_key, const QString &name, const QString &type,
                   const QVariant &_value);
@@ -114,6 +125,10 @@ private:
     float position_x;
     float position_y;
     QString errorMsg;
+    QStringList logMessage;
+    QStringList logWarning;
+    QStringList logError;
 };
+
 
 #endif  // NODE_H

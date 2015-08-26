@@ -1,6 +1,7 @@
 #include "data.h"
 #include "node.h"
 #include <assert.h>
+
 Node::Node() {
     inputGates = QVector<Gate *>();
     outputGates = QVector<Gate *>();
@@ -9,6 +10,9 @@ Node::Node() {
     name = QString();
     status = idle;
     progress = 0;
+    logMessage = QStringList();
+    logWarning = QStringList();
+    logError = QStringList();
 }
 
 QMap<QString, Node::Parameter> *Node::getParams() { return &this->params; }
@@ -252,3 +256,45 @@ QPoint Node::getGatePosition(QString gateName) {
 QString Node::getDescription() { return description; }
 
 void Node::setDescription(const QString &value) { description = value; }
+
+QStringList Node::getLogMessage() const{
+    return logMessage;
+}
+
+void Node::setLogMessage(const QStringList &value){
+    logMessage = value;
+    SingletonRender::instance()->showProgressButtons(ID,1);
+}
+
+void Node::addLogMessage(const QString &value){
+    logMessage += value;
+    SingletonRender::instance()->showProgressButtons(ID,1);
+}
+
+QStringList Node::getLogWarning() const{
+    return logWarning;
+}
+
+void Node::setLogWarning(const QStringList &value){
+    logWarning = value;
+    SingletonRender::instance()->showProgressButtons(ID,2);
+}
+
+void Node::addLogWarning(const QString &value){
+    logWarning += value;
+    SingletonRender::instance()->showProgressButtons(ID,2);
+}
+
+QStringList Node::getLogError() const{
+    return logError;
+}
+
+void Node::setLogError(const QStringList &value){
+    logError = value;
+    SingletonRender::instance()->showProgressButtons(ID,3);
+}
+
+void Node::addLogError(const QString &value){
+    logError += value;
+    SingletonRender::instance()->showProgressButtons(ID,3);
+}

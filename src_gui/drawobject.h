@@ -34,6 +34,8 @@ public:
     void addPicture(QPixmap *pic, QPoint position);
     void addGateButton(QPixmap *pic, QPoint position, QString gateName,
                        QString gateType, bool direction);
+    void addProgressButton(QPixmap *pic, QPoint position, QString gateName,
+                       QString gateType, bool direction);
 
     QPoint getGatePosition(QString gateName);
 
@@ -60,6 +62,9 @@ public:
 
     void setProgressValue(int value);
     void initializeProgressView();
+    void initializeProgressButton();
+    void progressButtonShow(int i);
+
     void changeProgressView();
     void setStatus(const Node::Status &status);
 signals:
@@ -69,6 +74,7 @@ signals:
 public slots:
     void releasedOnGate(QString gateName, QPoint position);
     void nodeNameChanged(QListWidgetItem *itemChanged);
+    void progressButtonClicked(int i);
 
 private slots:
     void restrictOneClickOneItem(QListWidgetItem *itemClicked);
@@ -79,6 +85,8 @@ private:
     //Stuff for progess
 
     QProgressBar *progressBar;
+    QPushButton *progressButton[3];
+
     bool progressMode;
 
     void setProgressView();

@@ -1,5 +1,4 @@
 
-
 #ifndef FILEHANDLER_H
 #define FILEHANDLER_H
 
@@ -24,6 +23,7 @@ public:
     enum ParseMode{
         progress,
         error,
+        warning
     };
 
     /**
@@ -69,6 +69,7 @@ public:
 private:
     static void parseProgress(QString &text);
     static void parseErrors(const QString &text);
+    static void parseLog(QString &text);
     static bool parsing;
 };
 

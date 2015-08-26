@@ -5,6 +5,7 @@
 #include "data.h"
 #include "gatebutton.h"
 #include "math.h"
+#include "parseerrorbox.h"
 
 MeshEditorWidget::MeshEditorWidget(QWidget *parent) : QWidget(parent) {
     connectSignals();
@@ -98,7 +99,6 @@ void MeshEditorWidget::mousePressEvent(QMouseEvent *event) {
         // pressed on a child
         // set focus on it
         emit onWidgetClicked(child->ID);
-
         // relative point of mouse to child
         QPoint hotSpot = event->pos() - child->pos();
         QByteArray arrayData;
