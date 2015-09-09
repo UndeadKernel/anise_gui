@@ -11,6 +11,9 @@
 #include "mesheditorwidget.h"
 #include "data.h"
 #include "propertywidget.h"
+#include "parseerrorbox.h"
+#include "node.h"
+#include <QSignalMapper>
 
 DrawObject::DrawObject(int id, QPoint position, int width, int height,
                        QWidget *parent, int highlightOffset) {
@@ -20,7 +23,8 @@ DrawObject::DrawObject(int id, QPoint position, int width, int height,
     this->highlightWidth = highlightOffset;
     this->nameLabel = 0;
     this->progressBar = 0;
-    // We say the constructor which position he has
+    this->progressButton[3] = {0};
+      // We say the constructor which position he has
     this->setGeometry(position.x(), position.y(), width + 2 * highlightOffset,
                       height + 2 * highlightOffset);
 
@@ -131,6 +135,7 @@ void DrawObject::setNodeName(QString const &nodeName) {
 void DrawObject::restrictOneClickOneItem(QListWidgetItem *itemClicked) {
     itemClicked->setSelected(false);
 }
+
 
 void DrawObject::addGateButton(QPixmap *pic, QPoint position, QString gateName,
                                QString gateType, bool direction) {
@@ -335,8 +340,9 @@ void DrawObject::show() {
     QWidget::show();
 
     if (progressBar) {
-        if (Data::instance()->isRunning())
-            progressBar->show();
+        if (Data::instance()->isRunning()){
+              progressBar->show();
+        }
         else
             progressBar->hide();
     }
@@ -349,6 +355,73 @@ void DrawObject::deleteLater() {
     progressBar->deleteLater();
     if (!nameLabel) return;
     nameLabel->deleteLater();
+}
+
+
+void DrawObject::initializeProgressButton(){
+    int posX = this->pos().x()+34;
+    int posY = this->pos().y() +5;
+    QSignalMapper *mapper=new QSignalMapper(this);
+    QObject::connect(mapper, SIGNAL(mapped(int)),this, SLOT(progressButtonClicked(int)));
+    char* filename="./data/images/";
+    for(int i=0;i<3;i++){
+          progressButton[i]=new QPushButton(dynamic_cast<QWidget *>(this->parent()));
+          progressButton[i]->setGeometry(posX, posY, this->width()/5, 12);
+          progressButton[i]->setStyleSheet({"border: none;"});
+         QString filename1=filename;
+        filename1.append(QString::number(i)).append(".png");
+        qDebug()<<filename1;
+          QPixmap pix(filename1);
+          QIcon icon(pix);
+          progressButton[i]->setIcon(icon);
+          progressButton[i]->setIconSize(pix.size());
+          progressButton[i]->update();
+           posY+=15;
+          progressButton[i]->hide();
+            mapper->setMapping(progressButton[i],i);
+           QObject::connect(progressButton[i], SIGNAL(clicked()),mapper, SLOT(map()));
+    }
+}
+
+void DrawObject::progressButtonShow(int i)
+{
+    if(i){
+        progressButton[i-1]->show();
+    }
+}
+
+void DrawObject::progressButtonClicked(int i)
+{
+
+    ParseErrorBox box;
+    QString logMessage, logWarning, logError;
+Node *n=Data::instance()->getNodeByID(this->ID);
+    box.setWindowTitle(n->getName());
+    switch(i){
+        case 0:box.setHeader("Information");
+               for(QString line:n->getLogMessage() ){
+                   logMessage.append(line);
+                   logMessage.append("\n");
+               }
+               box.setErrorText(logMessage);
+        break;
+        case 1:box.setHeader("Warning");
+               for(QString line:n->getLogWarning() ){
+               logWarning.append(line);
+               logWarning.append("\n");
+               }
+               box.setErrorText(logWarning);
+        break;
+        case 2:box.setHeader("Error");
+               for(QString line:n->getLogError() ){
+               logError.append(line);
+               logError.append("\n");
+               }
+               box.setErrorText(logError);
+        break;
+    }
+    box.exec();
+
 }
 
 void DrawObject::initializeProgressView() {
@@ -413,6 +486,8 @@ void DrawObject::deleteItemText(QListWidgetItem *item) {
 
 void DrawObject::setStatus(const Node::Status &status) {
     this->status = status;
+    for(int i=0;i<3;i++){
+    this->progressButton[i]->toolTip()=status;}
     switch (status) {
     case Node::edit:
         this->setStyleSheet("background-color:yellow;");

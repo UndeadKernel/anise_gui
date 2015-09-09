@@ -1,4 +1,4 @@
-﻿#include "jsonfilehandler.h"
+#include "jsonfilehandler.h"
 #include "data.h"
 #include <bitset>
 #include <QProcess>
@@ -6,7 +6,7 @@
 #include <QJsonArray>
 #include <QMessageBox>
 #include "parseerrorbox.h"
-
+#include <QDateTime>
 bool JsonFileHandler::parsing = false;
 
 /**
@@ -330,13 +330,22 @@ void JsonFileHandler::parseProgress(QString &text, const ParseMode &mode) {
 bool JsonFileHandler::isParsing() { return parsing; }
 
 void JsonFileHandler::parseProgress(QString &text) {
+
+    QString currentTime = QDateTime::currentDateTime().toString();
     text = text.mid(text.indexOf("{"), text.lastIndexOf("}") + 1);
     QJsonDocument doc = QJsonDocument::fromJson(text.toUtf8());
     QJsonObject obj = doc.object();
 
     if (!(obj.contains("progress") &&
-          obj["progress"].toObject().contains("source")))
-        return;
+                 obj["progress"].toObject().contains("source"))){
+        if (!obj.contains("log")){
+            return;
+        }
+        else{
+            parseLog(text);
+            ;
+        }
+    }
 
     obj = obj["progress"].toObject();
     QString source = obj["source"].toString();
@@ -350,15 +359,16 @@ void JsonFileHandler::parseProgress(QString &text) {
                 node->setStatus(Node::initializing);
             else if (obj["state"].toString() == "processing")
                 node->setStatus(Node::processing);
-        } else if (msg == "stop")
+        } else if (msg == "stop"){
             node->setStatus(Node::idle);
+        }
         else if (msg == "percentage") {
-            int progress = obj["info"].toInt();
+            int progress = obj["info"].toInt() ;
             node->setProgress(progress);
         } else if (msg == "error") {
             node->setStatus(Node::error);
-            node->addErrorMsg("- " + obj["info"].toString() + "\n");
-        } else if (msg == "warning") {
+            node->addErrorMsg(currentTime+" "+"- " + obj["info"].toString() + "\n");
+       } else if (msg == "warning") {
             ;
         }
     }
@@ -373,7 +383,8 @@ void JsonFileHandler::parseProgress(QString &text) {
             Data::instance()->stopSimulation();
         } else if (msg == "error") {
             // error occured
-            ;
+        ;
+
         }
     }
 }
@@ -442,4 +453,52 @@ QString JsonFileHandler::meshToJson() {
     QJsonDocument doc;
     doc.setObject(obj);
     return doc.toJson(QJsonDocument::Indented);
+}
+
+void JsonFileHandler::parseLog(QString &text) {
+    text = text.mid(text.indexOf("{"), text.lastIndexOf("}") + 1);
+    QJsonDocument doc = QJsonDocument::fromJson(text.toUtf8());
+    QJsonObject obj = doc.object();
+
+    if (!obj.contains("log"))
+        return;
+
+    obj = obj["log"].toObject();
+    QString source = obj["source"].toString();
+    // message comes from a node
+    if (source == "node") {
+        QString nodeName = obj["src_name"].toString();
+        Node *node = Data::instance()->getNodeByName(nodeName);
+        QString currentTime = obj["time"].toString();
+        QString status = obj["status"].toString();
+        QString msg = obj["msg"].toString();
+        if (status == "info") {
+            node->addLogMessage(currentTime + " " + nodeName + " " + msg);
+        } else if (status == "warning"){
+            node->addLogWarning(currentTime + " " + nodeName + " " + msg);
+        } else if (status == "error") {
+            node->addLogError(currentTime + " " + nodeName + " " + msg);
+        }
+    }
+    else if (source == "framework") {
+    // message comes from framework itself
+        QString framework = obj["src_name"].toString();
+        QString message=" ";
+         QString msg = obj["msg"].toString();
+        message = message + "Framework::" + framework + " ";
+        QString status = obj["status"].toString();
+        QString currentTime =  obj["time"].toString();
+        message = message + currentTime + " ";
+        if (status == "info") {
+            message = message + msg;
+        } else if (status == "warning") {
+            message = message + msg;
+        } else if (status == "error") {
+            message = message + msg;
+        }
+
+
+     Data::instance()->getMainWindow()->ui->qDebug_out->append(message);
+
+    }
 }

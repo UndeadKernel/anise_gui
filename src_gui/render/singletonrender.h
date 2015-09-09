@@ -1,6 +1,7 @@
 #ifndef SINGLETONRENDER_H
 #define SINGLETONRENDER_H
 
+
 #include "mainwindow.h"
 #include "node.h"
 #include "drawobject.h"
@@ -196,6 +197,7 @@ public:
     void updateConnections(const int &nodeID, const QPoint &offset);
     QPoint getInputGateDrawOffset() const;
     void setInputGateDrawOffset(const QPoint &value);
+     void setDrawOffset(const QPoint &value);
 
     void dehighlightObject(const int &ID);
     void highlightObject(const int &ID);
@@ -214,6 +216,8 @@ public:
     void setStatusColor(int nodeID, Node::Status status);
     void setPercentage(int nodeID, int percentage);
     void rerender(Node *nodeToRender, const int &nodeID);
+    void showProgressButtons(int nodeID, int buttonID);
+
 public slots:
     void changeProgressView();
     /**

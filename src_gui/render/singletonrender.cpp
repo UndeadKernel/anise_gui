@@ -401,6 +401,7 @@ bool SingletonRender::loadImages() {
         this->setOutputGateDrawOffset(QPoint(width, height / 2));
     }
 
+
     // create tiles from loaded image
     if (allImages.contains("body.png")) {
 
@@ -425,6 +426,8 @@ void SingletonRender::renderNode(Node *nodeToRender, const int &nodeID) {
         int gateHeight = allImages["gate.png"]->height();
         int gateWidth = allImages["gate.png"]->width();
         int gateOffset = 10;
+
+
         QString name = nodeToRender->getName();
 
         // find out how high the node is depending on the number of gates
@@ -496,7 +499,7 @@ void SingletonRender::renderNode(Node *nodeToRender, const int &nodeID) {
         NodeDrawObject->setNodeName(name);
         NodeDrawObject->setToolTip(nodeToRender->getDescription());
         NodeDrawObject->initializeProgressView();
-
+        NodeDrawObject->initializeProgressButton();
         allDrawnNodes.insert(nodeID, NodeDrawObject);
     }
     // TODO should use layouts instead of hardcoded position!
@@ -610,6 +613,7 @@ QPoint SingletonRender::getInputGateDrawOffset() const {
 void SingletonRender::setInputGateDrawOffset(const QPoint &value) {
     inputGateDrawOffset = value;
 }
+
 
 QPoint SingletonRender::getOutputGateDrawOffset() const {
     return outPutGateDrawOffset;
@@ -745,7 +749,15 @@ void SingletonRender::setStatusColor(int nodeID, Node::Status status){
     if(allDrawnNodes.contains(nodeID))
         allDrawnNodes.value(nodeID)->setStatus(status);
     else
-        qDebug() << "You tried to call DrawObject::setPercentage with non-existing nodeID: " << nodeID;
+        qDebug() << "You tried to call DrawObject::setStatusColor with non-existing nodeID: " << nodeID;
 
+
+}
+
+void SingletonRender::showProgressButtons(int nodeID, int buttonID){
+    if(allDrawnNodes.contains(nodeID))
+        allDrawnNodes.value(nodeID)->progressButtonShow(buttonID);
+    else
+        qDebug() << "You tried to call DrawObject::showProgressButtons with non-existing nodeID: " << nodeID;
 
 }

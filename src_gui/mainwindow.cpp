@@ -16,6 +16,7 @@
 #include "render/singletonrender.h"
 #include "nodecatalog.h"
 #include "data.h"
+#include <QJsonObject>
 
 int const MainWindow::EXIT_CODE_REBOOT = -123456789;
 
@@ -51,8 +52,9 @@ void MainWindow::initializeGUI() {
     ui->Node_Catalog->setupViewport(ui->nodeCatalogContent);
     ui->mesh_edt_area->setupViewport(ui->meshField);
 
-    // hides the tab-widget
-    ui->tabWidget->hide();
+    // show the tab-widget
+    ui->tabWidget->show();
+
     ui->start_button->hide();
     ui->stop_button->hide();
     ui->delete_button->hide();
@@ -501,4 +503,51 @@ void MainWindow::on_actionAbout_triggered() {
     aboutText += "\t-Mehrad Mohammadian\n";
     QMessageBox::information(this, "About Anise GUI", aboutText, QMessageBox::Ok);
 
+}
+
+void MainWindow::on_actionRun_Mesh_triggered(QString line) {
+
+    line = line.mid(line.indexOf("{"), line.lastIndexOf("}") + 1);
+    QJsonDocument doc = QJsonDocument::fromJson(line.toUtf8());
+    QJsonObject obj = doc.object();
+    QString message = " ";
+
+    if(obj.contains("log")){
+        obj = obj["log"].toObject();
+        QString msg = obj["msg"].toString();
+        QString source = obj["source"].toString();
+
+        // message comes from a node
+        if (source == "node") {
+            QString nodeName = obj["src_name"].toString();
+            QString status = obj["status"].toString();
+            QString currentTime =  obj["time"].toString();
+            message = message + currentTime + " " + nodeName + " ";
+            if (status == "info") {
+                message = message + msg;
+            } else if (status == "warning") {
+                message = message + msg;
+            } else if (status == "error") {
+                message = message + msg;
+            }
+        }
+        else if (source == "framework") {
+            QString framework = obj["src_name"].toString();
+            message = message + "Framework::" + framework + " ";
+            QString status = obj["status"].toString();
+            QString currentTime =  obj["time"].toString();
+            message = message + currentTime + " ";
+            if (status == "info") {
+                message = message + msg;
+            } else if (status == "warning") {
+                message = message + msg;
+            } else if (status == "error") {
+                message = message + msg;
+            }
+        }
+    }else{
+        return;
+    }
+
+  ui->qDebug_out->append(message);
 }
