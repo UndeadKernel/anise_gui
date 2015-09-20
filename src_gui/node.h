@@ -63,6 +63,7 @@ public:
     void setName(const QString &name);
 
     QString getName();
+    void setProgressButton(int value);
 
     QVector<Gate *> *getInputGates();
 
@@ -112,12 +113,15 @@ public:
     void addLogError(const QString &value);
 
 
+    QString getCategory();
+    void setCategory(const QString &value);
+
 private:
     bool addParam(const QString &descr, const QString &_key, const QString &name, const QString &type,
                   const QVariant &_value);
     QString description;
     QVector<Gate *> inputGates, outputGates;
-    QString type, name;
+    QString type, name,category;
     int ID = -2;
     QMap<QString, Parameter> params;  // maps <identifier, value>
     int progress;

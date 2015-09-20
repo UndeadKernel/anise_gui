@@ -45,6 +45,13 @@ void MainWindow::initializeGUI() {
     // logfenster
     // Q_DebugStream::registerQDebugMessageHandler();
 
+
+    //Setting the dimensions of Node_Catalog and Node_Categories GUI Elements
+    ui->Nodes_GroupBox->setFixedHeight(140);
+    ui->Node_Categories->setFixedHeight(130);
+    ui->Node_Catalog->setFixedHeight(130);
+    ui->Node_Catalog->setFixedWidth(450);
+
     // make the mesh editor accept drops
     ui->mesh_edt_area->setAcceptDrops(true);
 
@@ -52,9 +59,12 @@ void MainWindow::initializeGUI() {
     ui->Node_Catalog->setupViewport(ui->nodeCatalogContent);
     ui->mesh_edt_area->setupViewport(ui->meshField);
 
+    //set Node_Categories viewport as NodeCategories_List
+    ui->Node_Categories->setupViewport(ui->NodeCategories_List);
     // show the tab-widget
     ui->tabWidget->show();
-
+    //hide the console tab
+    ui->tabWidget->removeTab(0);
     ui->start_button->hide();
     ui->stop_button->hide();
     ui->delete_button->hide();
@@ -122,6 +132,7 @@ MainWindow::~MainWindow() { delete ui; }
 
 void MainWindow::on_actionLoad_triggered() {
     // clear old mesh
+    Data::instance()->clearMesh();
     this->on_actionNew_triggered();
 
     // get filename
@@ -199,8 +210,11 @@ void MainWindow::on_actionLoad_Catalog_triggered() {
     file.close();
     QString out = AniseCommunicator::getAllNodeTypes();
     // Data::instance()->getNodeCatalog()->Content.clear();
+    //delete the contents of the node catalog
+     qDeleteAll(ui->nodeCatalogContent->findChildren<QWidget *>());
     JsonFileHandler::parseNodeTypesFromAnise(out);
-    Data::instance()->newMeshProject();
+    //delete the contents of the node catalog
+     Data::instance()->newMeshProject();
     // SingletonRender::instance()->renderCatalogContent(Data::instance()->getNodeCatalog()->Content.values().toVector());
 
     qDebug() << "perfoming reboot...";
@@ -245,18 +259,19 @@ void MainWindow::updatePropertyTable(int nodeID) {
         oldfocus = nodeID;
         Node *n = Data::instance()->getNodeByID(nodeID);
         QMap<QString, Node::Parameter> *map = n->getParams();
-        table->setRowCount(map->size() + 5);
+        table->setRowCount(map->size() + 6);
         int i = 0;
         // create the entries all nodes have
         QTableWidgetItem *name = new QTableWidgetItem(),
                 *ID = new QTableWidgetItem(),
-                *type = new QTableWidgetItem();
+                *type = new QTableWidgetItem(),
+                *category = new QTableWidgetItem();
 
         // set the data
         ID->setData(0, nodeID);
         name->setData(0, n->getName());
         type->setData(0, n->getType());
-
+        category->setData(0,n->getCategory());
         // asign to table:
 
         // NodeID
@@ -272,6 +287,14 @@ void MainWindow::updatePropertyTable(int nodeID) {
         table->item(i, 0)->setFlags(table->item(i, 0)->flags() ^
                                     (Qt::ItemIsEnabled | Qt::ItemIsSelectable));
         i++;
+
+        //Node Category
+        table->setItem(i, 0, new QTableWidgetItem("Node Category"));
+        table->setItem(i, 1, category);
+        table->item(i, 0)->setFlags(table->item(i, 0)->flags() ^
+                                    (Qt::ItemIsEnabled | Qt::ItemIsSelectable));
+        i++;
+
 
         // input Gates
 
@@ -394,7 +417,7 @@ void MainWindow::displayTypeInfo(const QString &type) {
     const QMap<QString, Node::Parameter> *params = n.getParams();
 
     // init the table
-    table->setRowCount(((params->size()) + 4));
+    table->setRowCount(((params->size()) + 5));
     table->setColumnCount(2);
 
     // print the Node Type
@@ -440,6 +463,15 @@ void MainWindow::displayTypeInfo(const QString &type) {
         table->setItem(i, 1, new QTableWidgetItem(descr));
         table->item(i++, 1)->setToolTip(descr);
     }
+
+    QString category = n.getCategory();
+    if (category != "") {
+        table->setRowCount(table->rowCount() + 1);
+        table->setItem(i, 0, new QTableWidgetItem("Category"));
+        table->setItem(i, 1, new QTableWidgetItem(category));
+        table->item(i++, 1)->setToolTip(category);
+    }
+
     QList<QString> keys = params->keys();
     for (int j = 0; j < keys.size(); j++) {
         table->setItem(i, 0, new QTableWidgetItem((*params)[keys[j]].name));

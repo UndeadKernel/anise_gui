@@ -13,12 +13,16 @@ public:
     void setType(const QString &value);
 
     void mousePressEvent(QMouseEvent *ev);
+    QString getCategory() const;
+    void setCategory(const QString &value);
+
 signals:
 
 public slots:
 
 private:
     QString type;
+    QString category;
 
 };
 

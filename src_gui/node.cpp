@@ -86,6 +86,16 @@ bool Node::addParam(const QString &descr, const QString &_key, const QString &na
         return false;
     return true;
 }
+QString Node::getCategory()
+{
+    return category;
+}
+
+void Node::setCategory(const QString &value)
+{
+  category = value;
+}
+
 QString Node::getErrorMsg() const
 {
     return errorMsg;
@@ -122,6 +132,12 @@ void Node::setProgress(int value)
     assert((value >= 0 && value <= 100) || value == -1);
     progress = value;
     SingletonRender::instance()->setPercentage(ID,progress);
+}
+
+void Node::setProgressButton(int value){
+    if(value==-1){
+       SingletonRender::instance()->hideProgressButton(ID);
+    }
 }
 
 Node::Status Node::getStatus() const

@@ -37,7 +37,8 @@ public:
     void addProgressButton(QPixmap *pic, QPoint position, QString gateName,
                        QString gateType, bool direction);
 
-    QPoint getGatePosition(QString gateName);
+void setProgressButtonOver();
+QPoint getGatePosition(QString gateName);
 
     // Modify the mask of the drawobject inserting the mask of the pixmap at given
     // position
@@ -56,6 +57,7 @@ public:
     void setNodeName(const QString &nodeName);
 
     void move(int const &x, int const &y);
+    void moveProgressButton(const int &x, const int &y);
     void hide();
     void show();
     void deleteLater();
