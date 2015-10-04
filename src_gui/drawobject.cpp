@@ -23,7 +23,9 @@ DrawObject::DrawObject(int id, QPoint position, int width, int height,
     this->highlightWidth = highlightOffset;
     this->nameLabel = 0;
     this->progressBar = 0;
-    this->progressButton[3] = {0};
+    this->progressButton[0] = {0};
+    this->progressButton[1] = {0};
+    this->progressButton[2] = {0};
       // We say the constructor which position he has
     this->setGeometry(position.x(), position.y(), width + 2 * highlightOffset,
                       height + 2 * highlightOffset);
@@ -375,7 +377,7 @@ void DrawObject::initializeProgressButton(){
     int posY = this->pos().y() +5;
     QSignalMapper *mapper=new QSignalMapper(this);
     QObject::connect(mapper, SIGNAL(mapped(int)),this, SLOT(progressButtonClicked(int)));
-    char* filename="./data/images/";
+    QString filename="./data/images/";
     for(int i=0;i<3;i++){
           progressButton[i]=new QPushButton(dynamic_cast<QWidget *>(this->parent()));
           progressButton[i]->setGeometry(posX, posY, this->width()/5, 12);

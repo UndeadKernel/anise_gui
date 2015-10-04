@@ -343,7 +343,8 @@ void MainWindow::updatePropertyTable(int nodeID) {
                                     Qt::ItemIsEnabled));
         type->setFlags(type->flags() ^ (Qt::ItemIsEditable | Qt::ItemIsSelectable |
                                         Qt::ItemIsEnabled));
-
+        category->setFlags(category->flags() ^ (Qt::ItemIsEditable | Qt::ItemIsSelectable |
+                                         Qt::ItemIsEnabled));
         for (int j = 0; j < i; j++)
             table->item(j, 0)->setFlags(table->item(j, 0)->flags() ^
                                         (Qt::ItemIsEditable | Qt::ItemIsSelectable));
@@ -535,51 +536,4 @@ void MainWindow::on_actionAbout_triggered() {
     aboutText += "\t-Mehrad Mohammadian\n";
     QMessageBox::information(this, "About Anise GUI", aboutText, QMessageBox::Ok);
 
-}
-
-void MainWindow::on_actionRun_Mesh_triggered(QString line) {
-
-    line = line.mid(line.indexOf("{"), line.lastIndexOf("}") + 1);
-    QJsonDocument doc = QJsonDocument::fromJson(line.toUtf8());
-    QJsonObject obj = doc.object();
-    QString message = " ";
-
-    if(obj.contains("log")){
-        obj = obj["log"].toObject();
-        QString msg = obj["msg"].toString();
-        QString source = obj["source"].toString();
-
-        // message comes from a node
-        if (source == "node") {
-            QString nodeName = obj["src_name"].toString();
-            QString status = obj["status"].toString();
-            QString currentTime =  obj["time"].toString();
-            message = message + currentTime + " " + nodeName + " ";
-            if (status == "info") {
-                message = message + msg;
-            } else if (status == "warning") {
-                message = message + msg;
-            } else if (status == "error") {
-                message = message + msg;
-            }
-        }
-        else if (source == "framework") {
-            QString framework = obj["src_name"].toString();
-            message = message + "Framework::" + framework + " ";
-            QString status = obj["status"].toString();
-            QString currentTime =  obj["time"].toString();
-            message = message + currentTime + " ";
-            if (status == "info") {
-                message = message + msg;
-            } else if (status == "warning") {
-                message = message + msg;
-            } else if (status == "error") {
-                message = message + msg;
-            }
-        }
-    }else{
-        return;
-    }
-
-  ui->qDebug_out->append(message);
 }

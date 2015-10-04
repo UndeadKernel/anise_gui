@@ -270,6 +270,9 @@ void Data::sortForce() {
 }
 
 void Data::runMesh() {
+    for (Node *n : mesh->nodesInMesh){
+           n->setProgressButton(-1);
+    }
     if(!executable){
         QMessageBox::critical(mainWindow,"Cannot execute", "Current mesh file is not executable!");
         return;
