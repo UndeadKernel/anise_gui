@@ -384,9 +384,6 @@ bool SingletonRender::loadImages() {
                          << directory.absolutePath().append(listOfFiles.at(i)) << " "
                          << result;
             }
-
-
-
             allImages.insert(listOfFiles.at(i), temp);
         }
     }
@@ -498,12 +495,15 @@ void SingletonRender::renderNode(Node *nodeToRender, const int &nodeID) {
 
         NodeDrawObject->setNodeName(name);
         NodeDrawObject->setToolTip(nodeToRender->getDescription());
-        NodeDrawObject->initializeProgressView();
+         NodeDrawObject->initializeProgressView();
         NodeDrawObject->initializeProgressButton();
         allDrawnNodes.insert(nodeID, NodeDrawObject);
     }
     // TODO should use layouts instead of hardcoded position!
     allDrawnNodes.value(nodeID)->move(nodeToRender->x(), nodeToRender->y());
+   if(Data::instance()->getMoved()==true){
+       allDrawnNodes.value(nodeID)->moveProgressButton(nodeToRender->x(), nodeToRender->y());
+    }
 
     allDrawnNodes.value(nodeID)->show();
 }
@@ -548,6 +548,8 @@ void SingletonRender::renderNodeType(Node *nodeToRender, QWidget *parent,
     NodeDrawObject->setGeometry(0, 0, 50, 50);
     NodeDrawObject->adjustSize();
     // Generate a Tooltip
+    QString category = nodeToRender->getCategory();
+    NodeDrawObject->setCategory(category);
     QString type = nodeToRender->getType();
     NodeDrawObject->setType(type);
     QString toolTip;
@@ -569,6 +571,7 @@ void SingletonRender::renderNodeType(Node *nodeToRender, QWidget *parent,
 
 void SingletonRender::renderCatalogContent(const QVector<Node> &NodeVektor) {
     QWidget *CatalogParent = ui->nodeCatalogContent;
+    qDeleteAll(ui->nodeCatalogContent->findChildren<QWidget *>());
     int position = 0;
     CatalogParent->layout()->setSpacing(5);
     // TODO scroll weite sollte nicht hard coded sein
@@ -709,7 +712,6 @@ void SingletonRender::dehighlightGates() {
 void SingletonRender::setNodeName(const int &nodeID, const QString &nodeName) {
     if (!allDrawnNodes.contains(nodeID)) return;
     allDrawnNodes.value(nodeID)->setNodeName(nodeName);
-
     Data::instance()->getMainWindow()->updatePropertyTable(nodeID);
 }
 
@@ -744,6 +746,13 @@ void SingletonRender::setPercentage(int nodeID, int percentage){
         qDebug() << "You tried to call DrawObject::setPercentage with non-existing nodeID: " << nodeID;
 }
 
+void SingletonRender::hideProgressButton(int nodeID){
+
+    if(allDrawnNodes.contains(nodeID))
+        allDrawnNodes.value(nodeID)->setProgressButtonOver();
+    else
+        qDebug() << "You tried to call DrawObject::hideProgressButton with non-existing nodeID: " << nodeID;
+}
 void SingletonRender::setStatusColor(int nodeID, Node::Status status){
 
     if(allDrawnNodes.contains(nodeID))

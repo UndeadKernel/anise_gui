@@ -4,6 +4,7 @@
 #include "settingshandler.h"
 #include "nodefactory.h"
 #include "anisecommunicator.h"
+#include "ui_mainwindow.h"
 #include <QFileDialog>
 #include <QMessageBox>
 
@@ -51,8 +52,18 @@ Data::Data(QObject *parent) : QObject(parent) {
     SingletonRender *renderer = SingletonRender::instance();
 
     connect(this, SIGNAL(runModeChanged()), renderer, SLOT(changeProgressView()));
-
 }
+bool Data::getMoved() const
+{
+    return moved;
+}
+
+void Data::setMoved(bool value)
+{
+    moved = value;
+}
+
+
 int Data::getAutosave_interval() const
 {
     return autosave_interval;
@@ -107,6 +118,10 @@ void Data::initialize(MainWindow *mainWindow) {
     connect(mainWindow->ui->actionRun_Mesh, SIGNAL(triggered()), this,
             SLOT(runMesh()));
     connect(mainWindow->ui->actionStop_Simulation, SIGNAL(triggered()),this,SLOT(stopSimulation()));
+    //connect the on click even of items in node category list
+    connect(mainWindow->ui->NodeCategories_List,SIGNAL(itemSelectionChanged()),
+            this, SLOT(onNodeCategoryItemClicked()));
+
     /**
 * Create the Nodecatalog
 */
@@ -158,11 +173,52 @@ void Data::initialize(MainWindow *mainWindow) {
     JsonFileHandler::parseNodeTypesFromAnise(out);
 
     /**
-* Render the Nodecatalog filled with test nodes
+* Render the Nodecatalog depending on Category filled with test nodes
 */
-    SingletonRender::instance()->renderCatalogContent(
-                Data::instance()->getNodeCatalog()->getContentVector());
+    displayNodeCategory(Data::instance()->getNodeCatalog()->getContentVector());
 }
+
+//Display the list of node categories
+void Data::displayNodeCategory(const QVector<Node> &NodeVektor) {
+    //clear the node catalog content list for the current instance
+    categoryWithNodeList.clear();
+    foreach(Node node,NodeVektor){
+        QString category = node.getCategory();
+              categoryWithNodeList.insertMulti(category,node);
+    }
+    QStringList categories;
+    int i=0;
+    QListIterator<QString> it(categoryWithNodeList.keys());
+    while(it.hasNext()){
+        QString tempCategory=it.next();
+        if(!categories.contains(tempCategory))
+        {
+            QTreeWidgetItem *item=new QTreeWidgetItem(mainWindow->ui->NodeCategories_List);
+            item->setText(0,tempCategory);
+            mainWindow->ui->NodeCategories_List->insertTopLevelItem(i++,item);
+            categories.append(tempCategory);
+        }
+    }
+
+
+}
+
+// Display node catalog for a category depending on the click event
+void Data::onNodeCategoryItemClicked()
+{
+    QTreeWidgetItem* item;
+    QList<QTreeWidgetItem*> itemsSelected=mainWindow->ui->NodeCategories_List->selectedItems();
+    for(QTreeWidgetItem* it:itemsSelected){
+        if(itemsSelected.length()==1)
+            item=it;
+    }
+    QString category=item->text(0);
+    QList<Node> nodeList=categoryWithNodeList.values(category);
+    QVector<Node> categorizedNodeList=nodeList.toVector();
+    SingletonRender::instance()->renderCatalogContent(categorizedNodeList);
+}
+
+
 
 int Data::addNodeToMesh(Node *newNode) {
     //insert node into mesh
@@ -209,10 +265,14 @@ void Data::sortForce() {
     if (mesh) {
         mesh->sortForce();
         changed = true;
+        moved=true;
     }
 }
 
 void Data::runMesh() {
+    for (Node *n : mesh->nodesInMesh){
+           n->setProgressButton(-1);
+    }
     if(!executable){
         QMessageBox::critical(mainWindow,"Cannot execute", "Current mesh file is not executable!");
         return;
@@ -305,6 +365,7 @@ void Data::moveObjectInMesh(QPoint *start, QPoint *end, int ID) {
     if (this->mesh->nodesInMesh.contains(ID)) {
         this->moveObjectInMesh(end, ID);
         changed = true;
+        moved=true;
     }
     // is it a connection?
     else if (this->mesh->connectionsInMesh.contains(ID)) {
@@ -317,7 +378,15 @@ void Data::moveObjectInMesh(QPoint *start, QPoint *end, int ID) {
 }
 
 void Data::finishMesh() {
-    for (Node *n : mesh->nodesInMesh) n->setProgress(0);
+    for (Node *n : mesh->nodesInMesh){
+        n->setProgress(0);
+    }
+}
+
+void Data::clearMesh() {
+    for (Node *n : mesh->nodesInMesh){
+           n->setProgressButton(-1);
+    }
 }
 
 void Data::moveObjectInMesh(QPoint *Position, int ID) {
@@ -325,6 +394,7 @@ void Data::moveObjectInMesh(QPoint *Position, int ID) {
     if (this->mesh->nodesInMesh.contains(ID)) {
         this->mesh->getNodeByID(ID)->moveTo(Position->x(), Position->y());
         changed = true;
+        moved=true;
         SingletonRender::instance()->renderMesh();
     }
     //check if object is a connection

@@ -35,6 +35,11 @@ public:
    *
    */
     NodeFactory *nodeFactory;
+    /**
+    * The Hash Map used for categorizing nodes
+    * */
+
+    QHash<QString,Node> categoryWithNodeList;
 
     /**
     * The instance function returns a pointer to a static variable and thus is
@@ -129,7 +134,7 @@ public:
     void moveObjectInMesh(QPoint *start, QPoint *end, int ID);
     void finishMesh();
     void newMeshProject();
-
+    void clearMesh();
     Mesh *getMesh();
 
     MainWindow *getMainWindow() const;
@@ -153,6 +158,9 @@ public:
 
     int getAutosave_interval() const;
     void setAutosave_interval(int value);
+    void displayNodeCategory(const QVector<Node> &NodeVektor);
+    bool getMoved() const;
+    void setMoved(bool value);
 
 signals:
 
@@ -177,6 +185,7 @@ public slots:
     void startSimulation();
     void stopSimulation();
     void runMesh();
+    void onNodeCategoryItemClicked();
 private slots:
     /**
      * @brief autosaveMesh saves a backup file of the current mesh
@@ -216,6 +225,7 @@ private:
     NodeCatalog *nodeCatalog;
     bool changed = false;
     bool repaint = false;
+    bool moved=false;
     bool onSimulation;
     //timer for autobackups
     QTimer *backupTimer;

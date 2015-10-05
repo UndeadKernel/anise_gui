@@ -68,12 +68,13 @@ void JsonFileHandler::parseNodeTypesFromAnise(QString &output) {
     }
 
     foreach (QJsonValue var, obj["nodes"].toArray()) {
-        QString type, descr;
+        QString type, descr,category;
         QList<Gate *> input_gates, output_gates;
 
         QJsonObject localNode = var.toObject(), json_params;
         type = localNode["class"].toString();
         descr = localNode["description"].toString();
+        category=localNode["category"].toString();
         QJsonArray inputs = localNode["input_gates"].toArray(),
                 outputs = localNode["output_gates"].toArray();
 
@@ -100,6 +101,7 @@ void JsonFileHandler::parseNodeTypesFromAnise(QString &output) {
         Node node;
         node.setType(type);
         node.setDescription(descr);
+        node.setCategory(category);
         node.addGates(input_gates.toVector(), true);
         node.addGates(output_gates.toVector(), false);
 

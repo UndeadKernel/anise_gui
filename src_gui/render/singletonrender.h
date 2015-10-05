@@ -94,7 +94,7 @@ public:
    * @brief clearMeshField, will clear the meshfield
    */
     void clearMeshField();
-
+void hideProgressButton(int);
     /**
    *
    *

@@ -48,8 +48,6 @@ private slots:
 
     void on_actionAbout_triggered();
 
-    void on_actionRun_Mesh_triggered(QString line);
-
 private:
     void initializeGUI();
     bool pathChanged = false;
